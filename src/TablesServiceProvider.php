@@ -30,5 +30,12 @@ class TablesServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../config/tables.php' => config_path('tables.php'),
         ], ['tables', 'tables-config']);
+
+        // The schema-driven React component (D58), published into the host app
+        // Breeze-style: the app owns the copy (and the shadcn/ui primitives it
+        // imports from @/components/ui) and may edit it freely.
+        $this->publishes([
+            __DIR__.'/../resources/js' => resource_path('js/datawell'),
+        ], ['tables', 'tables-frontend']);
     }
 }

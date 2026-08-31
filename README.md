@@ -54,6 +54,23 @@ whatever authenticates people in your app.
 Validation failures return `422` with `{message, errors}`; anything unknown, hidden, or
 out of scope is an indistinguishable `404`.
 
+### The table component
+
+The schema-driven React `<DataTable>` (D58: hand-rolled, no TanStack) ships as source
+and publishes into your app Breeze-style — your app owns the copy and may edit it:
+
+```bash
+php artisan vendor:publish --tag="tables-frontend"
+```
+
+That copies `data-table.tsx`, `group-view.tsx`, `cells.tsx`, `filters.tsx`,
+`actions.tsx` and `lib.ts` (the typed wire client) into `resources/js/datawell/`.
+The components expect shadcn/ui primitives at `@/components/ui/*` and render entirely
+from the published schema: columns by type and cardinality, filter chips from published
+operators (including D52 relative dates), search, sorts, cursor and offset paging,
+grouped buckets, row/bulk/query-scope actions with confirmation, and queued-run
+progress polling.
+
 ## Changelog
 
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
