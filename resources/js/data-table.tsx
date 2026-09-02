@@ -5,6 +5,7 @@ import {
     ChevronRight,
     Columns3,
 } from 'lucide-react';
+import type { MouseEvent } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     RowActionsMenu,
@@ -47,6 +48,10 @@ import { datawell, isWireError } from './lib';
 type DataTableProps = {
     schema: Schema;
     parameters: Record<string, unknown>;
+    /** Conditions a host page pins (a person's licences, one version's signatures); never shown in the filter bar. */
+    fixedConditions?: FilterCondition[];
+    /** Field keys hidden by default, typically the one the fixed conditions already answer. */
+    hiddenFields?: string[];
 };
 
 async function loadOptions(sourceKey: string): Promise<EntityRef[]> {
@@ -70,7 +75,12 @@ async function loadOptions(sourceKey: string): Promise<EntityRef[]> {
     });
 }
 
-export function DataTable({ schema, parameters }: DataTableProps) {
+export function DataTable({
+    schema,
+    parameters,
+    fixedConditions = [],
+    hiddenFields = [],
+}: DataTableProps) {
     const sourceKey = schema.source.key;
 
     const [search, setSearch] = useState('');
@@ -81,7 +91,9 @@ export function DataTable({ schema, parameters }: DataTableProps) {
     const [pageSize, setPageSize] = useState(25);
     const [pageNumber, setPageNumber] = useState(1);
     const [cursors, setCursors] = useState<string[]>([]);
-    const [hidden, setHidden] = useState<Set<string>>(new Set());
+    const [hidden, setHidden] = useState<Set<string>>(
+        () => new Set(hiddenFields),
+    );
     const [selected, setSelected] = useState<Set<number | string>>(new Set());
     const [allMatching, setAllMatching] = useState(false);
     const [result, setResult] = useState<QueryResult | null>(null);
@@ -101,11 +113,18 @@ export function DataTable({ schema, parameters }: DataTableProps) {
         return () => clearTimeout(handle);
     }, [search]);
 
+    const allConditions = useMemo(
+        () => [...fixedConditions, ...conditions],
+        [fixedConditions, conditions],
+    );
+
     const body: QueryBody = useMemo(
         () => ({
             ...(Object.keys(parameters).length > 0 ? { parameters } : {}),
             ...(debouncedSearch !== '' ? { search: debouncedSearch } : {}),
-            ...(conditions.length > 0 ? { filters: { conditions } } : {}),
+            ...(allConditions.length > 0
+                ? { filters: { conditions: allConditions } }
+                : {}),
             ...(sorts.length > 0 ? { sorts } : {}),
             page:
                 pageMode === 'cursor'
@@ -120,7 +139,7 @@ export function DataTable({ schema, parameters }: DataTableProps) {
         [
             parameters,
             debouncedSearch,
-            conditions,
+            allConditions,
             sorts,
             pageMode,
             pageSize,
@@ -250,12 +269,37 @@ export function DataTable({ schema, parameters }: DataTableProps) {
                 action.targets.includes('queryScope')),
     );
 
+    // A row with a self-link (D34) opens its view page; clicks that land on a
+    // control, a link, or a text selection are left alone.
+    const openRow = (row: Row, event: MouseEvent<HTMLTableRowElement>) => {
+        if (row.url === undefined) {
+            return;
+        }
+
+        const target = event.target as HTMLElement;
+
+        if (
+            target.closest('a, button, input, [role="checkbox"], [role="menu"]') ||
+            (window.getSelection()?.toString() ?? '') !== ''
+        ) {
+            return;
+        }
+
+        if (event.metaKey || event.ctrlKey) {
+            window.open(row.url, '_blank', 'noopener');
+
+            return;
+        }
+
+        window.location.assign(row.url);
+    };
+
     const bulkTarget = (): PendingAction['target'] =>
         allMatching
             ? {
                   query: {
-                      ...(conditions.length > 0
-                          ? { filters: { conditions } }
+                      ...(allConditions.length > 0
+                          ? { filters: { conditions: allConditions } }
                           : {}),
                       ...(debouncedSearch !== ''
                           ? { search: debouncedSearch }
@@ -407,7 +451,7 @@ export function DataTable({ schema, parameters }: DataTableProps) {
                 <GroupView
                     schema={schema}
                     parameters={parameters}
-                    conditions={conditions}
+                    conditions={allConditions}
                     search={debouncedSearch}
                 />
             )}
@@ -478,7 +522,8 @@ export function DataTable({ schema, parameters }: DataTableProps) {
                             {rows.map((row: Row) => (
                                 <tr
                                     key={row.id}
-                                    className="hover:bg-accent/40 border-b last:border-0"
+                                    className={`hover:bg-accent/40 border-b last:border-0 ${row.url ? 'cursor-pointer' : ''}`}
+                                    onClick={(event) => openRow(row, event)}
                                 >
                                     <td className="px-3 py-2">
                                         <Checkbox
