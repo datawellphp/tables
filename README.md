@@ -6,7 +6,6 @@
     <a href="https://packagist.org/packages/datawell/tables"><img src="https://img.shields.io/packagist/v/datawell/tables.svg?style=flat-square" alt="Packagist"></a>
     <a href="https://packagist.org/packages/datawell/tables"><img src="https://img.shields.io/packagist/php-v/datawell/tables.svg?style=flat-square" alt="PHP from Packagist"></a>
     <a href="https://packagist.org/packages/datawell/tables"><img src="https://badge.laravel.cloud/badge/datawell/tables?style=flat" alt="Laravel versions"></a>
-    <a href="https://github.com/datawellphp/tables/actions"><img alt="GitHub Workflow Status (main)" src="https://img.shields.io/github/actions/workflow/status/datawell/tables/tests.yml?branch=main&label=Tests&style=flat-square"></a>
     <a href="https://packagist.org/packages/datawell/tables"><img src="https://img.shields.io/packagist/dt/datawell/tables.svg?style=flat-square" alt="Total Downloads"></a>
 </p>
 
@@ -76,6 +75,8 @@ progress polling.
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
 
 ## Contributing
+
+This repository is a read-only copy of the `tables` package, published automatically from Datawell's development repository, so changes aren't merged here directly. Issues and pull requests are still welcome: accepted changes are applied upstream and published back here.
 
 Thank you for considering contributing to Datawell Tables! Please review our [contributing guide](.github/CONTRIBUTING.md) to get started.
 
