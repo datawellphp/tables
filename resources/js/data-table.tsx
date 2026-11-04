@@ -279,7 +279,9 @@ export function DataTable({
         const target = event.target as HTMLElement;
 
         if (
-            target.closest('a, button, input, [role="checkbox"], [role="menu"]') ||
+            target.closest(
+                'a, button, input, [role="checkbox"], [role="menu"]',
+            ) ||
             (window.getSelection()?.toString() ?? '') !== ''
         ) {
             return;
